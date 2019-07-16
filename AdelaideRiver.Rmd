@@ -6,86 +6,51 @@ output: html_document
 library(ggplot2)
 library(dplyr)
 library(ncdf4)
+library(lubridate)
 ```
 
 ```{r}
 files <- Sys.glob("data/*")
 fname <-files[1]
 f <- nc_open(fname)
-head(f)
+#head(f)
+
+cica <-ncvar_get(f, "cica")
 
 t <- ncvar_get(f, "time")
 time_from <- substr(ncatt_get(f, "time")$units, 15, 33)
-time <- as.POSIXct(t, origin=time_from)
-head(time)
+datetime <- as.POSIXct(t, origin=time_from, format = "%Y-%m-%d %H:%M")
 
-Tair <- ncvar_get(f, "Tair")
 
-cica <-ncvar_get(f, "cica")
-time <- time[cica >-500]
-cica <- cica[cica >-500]
+df <- data.frame(datetime, cica)
+colnames(df)<- c("datetime", "cica")
+df$year <- year(df$date)
+df$month <- month(df$date)
+df$doy <- yday(df$date)
+df <- df[df$cica > -500, ]
 
-plot(time, cica)
+plot(df$datetime, df$cica)
+```
+
+
+```{r}
+df_grp_doy <- group_by(df, doy) 
+df_doy <- summarize(df_grp_doy, mean(cica)) 
+plot(df_doy)
 ```
 
 ```{r}
-
-df <- data.frame(time, cica)
-colnames(df)<- c("time", "cica")
-
-# Let's use the dplyr lib to aggregate to daily data
-df_day <- df %>%
-  mutate(day=as.Date(time, format="%Y-%m-%d")) %>%
-  group_by(day) %>%               # group by the day column
-  summarise(cica=mean(cica))      # calculate the mean of all the cica values that occurred on each day
-
-plot(df_day)
-
-```
-
-```{r}
-df_month <- df %>%
-  mutate(month=as.Date(time, format="%Y-%m-%d")) %>%
-  group_by(month) %>%               # group by the day column
-  summarise(cica=mean(cica))      # calculate the mean of all the cica values that occurred on each day
-
+df_grp_month <- group_by(df, month) 
+df_month <- summarize(df_grp_month, mean(cica)) 
 plot(df_month)
 ```
-```{r}
-df_year <- df %>%
-  mutate(year=as.Date(time, format="%Y-%m-%d")) %>%
-  group_by(year) %>%               # group by the day column
-  summarise(cica=mean(cica))      # calculate the mean of all the cica values that occurred on each day
 
+
+
+```{r}
+# Obviously this one would look better if you had more years!!!
+df_grp_year <- group_by(df, year) 
+df_year <- summarize(df_grp_year, mean(cica)) 
 plot(df_year)
-```
-```{r}
-df_year
-```
-```{r}
-fwsoil <- ncvar_get(f, "Fwsoil")
-plot(fwsoil)
-```
-```{r}
-open_nc_file <- function(fname) {
-  
-  f <- nc_open(fname)
-  
-  t <- ncvar_get(f, "time")
-  time_from <- substr(ncatt_get(f, "time")$units, 15, 33)
-  time <- as.POSIXct(t, origin=time_from)
-  return (c(f,time))
-}
-```
-
-```{r}
-x <-open_nc_file(files[1])
-f<- x[1]
-time <- x[2]
-print(time)
-```
-
-```{r}
-
 ```
 
