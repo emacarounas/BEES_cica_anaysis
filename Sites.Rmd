@@ -1,0 +1,158 @@
+---
+title: "Untitled2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(chron)
+library(RColorBrewer)
+library(lattice)
+library(ncdf4)
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+library(tidync)
+library(ncdf4.helpers)
+library(PCICt)
+library(ncdf.tools)
+library(hydroTSM)
+library(lubridate)
+library(easyNCDF)
+```
+
+looping functions?
+
+```{r}
+read_ncdf <- function(input_NetCDF_file) {
+  files <- Sys.glob("outputs/*")
+  fname <-files[1:10]
+  f <- nc_open(fname)
+  time <- ncvar_get(f, varid = "time")
+  time_from <- substr(ncatt_get(f, "time")$units, 15, 33)
+  time <- as.POSIXct(time, origin=time_from)
+  cica <- ncvar_get(f, "cica")
+  time <- time[cica >-500]
+  cica <- cica[cica >-500]
+  lon <- ncvar_get(f, "longitude")
+  lat <- ncvar_get(f, "latitude")
+  
+  df <- data.frame(time, cica, lat, long)
+  colnames(df)<- c("time", "cica")
+
+
+  df$date<- as.Date(df[,1], "%m/%d/%Y") #Add dates
+  df$year <- as.numeric(format(df$date, format = "%Y"))
+  df$month <- as.numeric(format(df$date, format = "%m"))
+  df$day <- as.numeric(format(df$date, format = "%d"))
+
+  return(df)
+}
+```
+
+```{r}
+files <- list.files(path = "outputs", pattern = "\\.nc", full.names = TRUE, 
+                recursive = FALSE)
+
+result <- lapply(files, function(f) { read_ncdf() })
+# rbind all together 
+result_df <- do.call("rbind", result) 
+
+ggplot(result_df, aes(time, cica)) +
+  geom_line() +
+  xlab('Time') +
+  ylab(expression('Ci:Ca'))
+
+```
+
+
+
+Howard Springs -> opening NetCdf file
+```{r}
+files <- Sys.glob("outputs/*")
+files
+fname <-files[7]
+f <- nc_open(fname)
+head(f)
+f
+```
+
+
+Getting Variables (t, cica, lat, long)
+```{r}
+time <- ncvar_get(f, varid = "time")
+time_from <- substr(ncatt_get(f, "time")$units, 15, 33)
+time <- as.POSIXct(time, origin=time_from)
+head(time)
+
+cica <- ncvar_get(f, "cica")
+head(cica)
+
+
+lon <- ncvar_get(f, "longitude")
+lat <- ncvar_get(f, "latitude")
+head(lon)
+head(lat)
+
+fwsoil <- ncvar_get(f, "Fwsoil")
+head(fwsoil)
+
+time <- time[cica >-500]
+cica <- cica[cica >-500]
+
+```
+
+Data Frame
+```{r}
+df <- data.frame(time,cica)
+colnames(df)<- c("time", "cica")
+```
+
+
+
+Plotting cica + time
+```{r}
+ggplot(df, aes(time, cica)) +
+  geom_line() +
+  xlab('Time') +
+  ylab(expression('Ci:Ca')) 
+```
+
+Gingin
+```{r}
+files <- Sys.glob("outputs/*")
+files
+fname <-files[10]
+f2 <- nc_open(fname)
+head(f2)
+f2
+```
+
+```{r}
+time <- ncvar_get(f2, varid = "time")
+time_from <- substr(ncatt_get(f2, "time")$units, 15, 33)
+time <- as.POSIXct(time, origin=time_from)
+head(time)
+
+cica <- ncvar_get(f2, "cica")
+head(cica)
+
+time <- time[cica >-500]
+cica <- cica[cica >-500]
+
+lon <- ncvar_get(f2, "longitude")
+lat <- ncvar_get(f2, "latitude")
+head(lon)
+head(lat)
+```
+
+```{r}
+df2 <- data.frame(time, cica)
+colnames(df2)<- c("time", "cica")
+
+ggplot(df2, aes(time, cica)) +
+  geom_line() +
+  xlab('Time') +
+  ylab(expression('Ci:Ca'))
+```
+
+

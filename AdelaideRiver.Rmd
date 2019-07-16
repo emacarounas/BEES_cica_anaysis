@@ -1,0 +1,91 @@
+---
+title: "Untitled"
+output: html_document
+---
+```{r}
+library(ggplot2)
+library(dplyr)
+library(ncdf4)
+```
+
+```{r}
+files <- Sys.glob("data/*")
+fname <-files[1]
+f <- nc_open(fname)
+head(f)
+
+t <- ncvar_get(f, "time")
+time_from <- substr(ncatt_get(f, "time")$units, 15, 33)
+time <- as.POSIXct(t, origin=time_from)
+head(time)
+
+Tair <- ncvar_get(f, "Tair")
+
+cica <-ncvar_get(f, "cica")
+time <- time[cica >-500]
+cica <- cica[cica >-500]
+
+plot(time, cica)
+```
+
+```{r}
+
+df <- data.frame(time, cica)
+colnames(df)<- c("time", "cica")
+
+# Let's use the dplyr lib to aggregate to daily data
+df_day <- df %>%
+  mutate(day=as.Date(time, format="%Y-%m-%d")) %>%
+  group_by(day) %>%               # group by the day column
+  summarise(cica=mean(cica))      # calculate the mean of all the cica values that occurred on each day
+
+plot(df_day)
+
+```
+
+```{r}
+df_month <- df %>%
+  mutate(month=as.Date(time, format="%Y-%m-%d")) %>%
+  group_by(month) %>%               # group by the day column
+  summarise(cica=mean(cica))      # calculate the mean of all the cica values that occurred on each day
+
+plot(df_month)
+```
+```{r}
+df_year <- df %>%
+  mutate(year=as.Date(time, format="%Y-%m-%d")) %>%
+  group_by(year) %>%               # group by the day column
+  summarise(cica=mean(cica))      # calculate the mean of all the cica values that occurred on each day
+
+plot(df_year)
+```
+```{r}
+df_year
+```
+```{r}
+fwsoil <- ncvar_get(f, "Fwsoil")
+plot(fwsoil)
+```
+```{r}
+open_nc_file <- function(fname) {
+  
+  f <- nc_open(fname)
+  
+  t <- ncvar_get(f, "time")
+  time_from <- substr(ncatt_get(f, "time")$units, 15, 33)
+  time <- as.POSIXct(t, origin=time_from)
+  return (c(f,time))
+}
+```
+
+```{r}
+x <-open_nc_file(files[1])
+f<- x[1]
+time <- x[2]
+print(time)
+```
+
+```{r}
+
+```
+

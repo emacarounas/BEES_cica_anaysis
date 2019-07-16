@@ -1,0 +1,47 @@
+---
+title: "controls"
+output: html_document
+---
+
+```{r}
+library(visreg)
+library(relaimpo)
+```
+
+```{r}
+files <- Sys.glob("outputs/*")
+files
+fname <-files[7]
+f <- nc_open(fname)
+head(f)
+```
+
+```{r}
+time <- ncvar_get(f, varid = "time")
+time_from <- substr(ncatt_get(f, "time")$units, 15, 33)
+time <- as.POSIXct(time, origin=time_from)
+head(time)
+
+cica <- ncvar_get(f, "cica")
+head(cica)
+
+
+lon <- ncvar_get(f, "longitude")
+lat <- ncvar_get(f, "latitude")
+head(lon)
+head(lat)
+
+fwsoil <- ncvar_get(f, "Fwsoil")
+head(fwsoil)
+
+time <- time[cica >-500]
+cica <- cica[cica >-500]
+```
+
+```{r}
+df <- data.frame(fwsoil, cica, time, stringsAsFactors = FALSE)
+colnames(df)<- c("fwsoil", "cica")
+
+lm(ci:ca ~ fwsoil, data = df)
+```
+
