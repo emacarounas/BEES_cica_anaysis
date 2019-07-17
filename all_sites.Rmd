@@ -48,7 +48,7 @@ for (fname in files) {
   df <- df[df$cica > -500, ]
   
   out_fname <- sprintf("%s/%s_all_cica_env_data.csv", out_dir, site_name)
-  write.csv(df, file=out_fname)
+  write.csv(df, file=out_fname, row.names = FALSE)
   
   nc_close(f)
 }
