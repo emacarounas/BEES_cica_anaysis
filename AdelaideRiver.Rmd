@@ -10,7 +10,7 @@ library(lubridate)
 ```
 
 ```{r}
-files <- Sys.glob("data/*")
+files <- Sys.glob("outputs/*")
 fname <-files[1]
 f <- nc_open(fname)
 #head(f)
@@ -27,11 +27,21 @@ colnames(df)<- c("datetime", "cica")
 df$year <- year(df$date)
 df$month <- month(df$date)
 df$doy <- yday(df$date)
+df$hour <- hour(df$date)
 df <- df[df$cica > -500, ]
+```
 
+
+
+```{r}
 plot(df$datetime, df$cica)
 ```
 
+```{r}
+df_grp_hod <- group_by(df, hour) 
+df_hour <- summarize(df_grp_hod, mean(cica)) 
+plot(df_hour)
+```
 
 ```{r}
 df_grp_doy <- group_by(df, doy) 
@@ -52,5 +62,9 @@ plot(df_month)
 df_grp_year <- group_by(df, year) 
 df_year <- summarize(df_grp_year, mean(cica)) 
 plot(df_year)
+```
+```{r}
+#df_summer <- df[((df$month == 12) & (df$month == 1) & (df$month == 2)), ]
+#plot(df_summer)
 ```
 
