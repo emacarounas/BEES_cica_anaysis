@@ -7,17 +7,22 @@ library(ggplot2)
 library(dplyr)
 library(ncdf4)
 library(lubridate)
+library(plyr)
+library(readr)
+```
+
+```{r}
 ```
 
 ```{r}
 
-# Create directory to save all processed files.
+# Create directory to save all processed files
 out_dir <- "processed"
 if (!dir.exists(file.path(out_dir))) {
   dir.create(file.path(out_dir))
 }
 
-# We're going to loop over each site, extract Ci:Ca, Tair etc and save to a CSV...
+# Loop over each site, extract varibales (ci:ca, time, temp etc) and save to CSV 
 files <- Sys.glob("outputs/*")
 for (fname in files) {
   f <- nc_open(fname)
@@ -34,13 +39,12 @@ for (fname in files) {
   datetime <- as.POSIXct(t, origin=time_from, format = "%Y-%m-%d %H:%M")
 
 
-  #df <- data.frame(datetime, cica, Tair, qair, Fwsoil)
-  #colnames(df)<- c("datetime", "cica", "Tair", "qair", "Fwsoil")
-  df <- data.frame(datetime, cica)
-  colnames(df)<- c("datetime", "cica")
+  df <- data.frame(datetime, cica, Tair, qair, Fwsoil)
+  colnames(df)<- c("datetime", "cica", "Tair", "qair", "Fwsoil")
   df$year <- year(df$date)
   df$month <- month(df$date)
   df$doy <- yday(df$date)
+  df$hour <- hour(df$date)
   df <- df[df$cica > -500, ]
   
   out_fname <- sprintf("%s/%s_all_cica_env_data.csv", out_dir, site_name)
@@ -49,3 +53,5 @@ for (fname in files) {
   nc_close(f)
 }
 ```
+
+

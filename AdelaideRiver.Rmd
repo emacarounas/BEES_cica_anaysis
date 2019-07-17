@@ -7,27 +7,34 @@ library(ggplot2)
 library(dplyr)
 library(ncdf4)
 library(lubridate)
+library(tidyverse)
+library(sp)
 ```
 
 ```{r}
+#Opening ncdf file
 files <- Sys.glob("outputs/*")
 fname <-files[1]
 f <- nc_open(fname)
-#head(f)
+head(f)
+f
 
+#Extracting variables from ncdf file
 cica <-ncvar_get(f, "cica")
-
 t <- ncvar_get(f, "time")
-time_from <- substr(ncatt_get(f, "time")$units, 15, 33)
+
+#Converting 'time_from' untis to min, hr, d, m, y values
+time_from <- substr(ncatt_get(f, "time")$units, 15, 33) #
 datetime <- as.POSIXct(t, origin=time_from, format = "%Y-%m-%d %H:%M")
 
-
+#Creating data frame 
 df <- data.frame(datetime, cica)
 colnames(df)<- c("datetime", "cica")
 df$year <- year(df$date)
 df$month <- month(df$date)
 df$doy <- yday(df$date)
 df$hour <- hour(df$date)
+df$season <-season(df$date)
 df <- df[df$cica > -500, ]
 ```
 
@@ -38,18 +45,21 @@ plot(df$datetime, df$cica)
 ```
 
 ```{r}
+#Diurnal plot
 df_grp_hod <- group_by(df, hour) 
 df_hour <- summarize(df_grp_hod, mean(cica)) 
 plot(df_hour)
 ```
 
 ```{r}
+#Day of year plot
 df_grp_doy <- group_by(df, doy) 
 df_doy <- summarize(df_grp_doy, mean(cica)) 
 plot(df_doy)
 ```
 
 ```{r}
+#Monthly plot
 df_grp_month <- group_by(df, month) 
 df_month <- summarize(df_grp_month, mean(cica)) 
 plot(df_month)
@@ -58,15 +68,37 @@ plot(df_month)
 
 
 ```{r}
-# Obviously this one would look better if you had more years!!!
+# Yearly plot
 df_grp_year <- group_by(df, year) 
 df_year <- summarize(df_grp_year, mean(cica)) 
 plot(df_year)
 ```
 ```{r}
-#df_summer <- df[((df$month == 12) & (df$month == 1) & (df$month == 2)), ]
-#plot(df_summer)
+#Seasonal plot ... how do i just get one season ???????
 
-df_summer <- df[df$month >= "1970-01-01" & myData$myDate <= "2016-06-27",]
+df_grp_season <- group_by(df, season) 
+df_season <- summarize(df_grp_season, mean(cica)) 
+plot(df_season)
+```
+
+
+
+```{r}
+#Making season a fucntion
+season <- function(timedate, convention = "month_initials") {
+  s_terms <- switch(convention, 
+                    "southern_hemisphere" = c("autumn", "winter", "spring", "summer"),
+                    "month_initials"      = c("MAM",    "JJA",    "SON",    "DJF"),
+                    stop("Wrong value of convention")
+  )
+  
+  m <- month(timedate)
+  s <- factor(character(length(m)), levels = s_terms)
+  s[m %in% c( 3,  4,  5)] <- s_terms[1]
+  s[m %in% c( 6,  7,  8)] <- s_terms[2]
+  s[m %in% c( 9, 10, 11)] <- s_terms[3]
+  s[m %in% c(12,  1,  2)] <- s_terms[4]
+  s
+}
 ```
 
