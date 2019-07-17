@@ -9,9 +9,8 @@ library(ncdf4)
 library(lubridate)
 library(plyr)
 library(readr)
-```
 
-```{r}
+source("qair_to_vpd.R")
 ```
 
 ```{r}
@@ -30,17 +29,21 @@ for (fname in files) {
   print(fname)
   print(site_name)
   cica <-ncvar_get(f, "cica")
-  Tair <-ncvar_get(f, "Tair")
+  tair <-ncvar_get(f, "Tair")
   qair <-ncvar_get(f, "Qair")
+  press <-ncvar_get(f, "PSurf")
   Fwsoil <-ncvar_get(f, "Fwsoil")
+  
+  # calculate VPD
+  vpd <- qair_to_vpd(qair, tair, press)
 
   t <- ncvar_get(f, "time")
   time_from <- substr(ncatt_get(f, "time")$units, 15, 33)
   datetime <- as.POSIXct(t, origin=time_from, format = "%Y-%m-%d %H:%M")
 
 
-  df <- data.frame(datetime, cica, Tair, qair, Fwsoil)
-  colnames(df)<- c("datetime", "cica", "Tair", "qair", "Fwsoil")
+  df <- data.frame(datetime, cica, tair, vpd, Fwsoil)
+  colnames(df)<- c("datetime", "cica", "tair", "vpd", "Fwsoil")
   df$year <- year(df$date)
   df$month <- month(df$date)
   df$doy <- yday(df$date)
