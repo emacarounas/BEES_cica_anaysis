@@ -10,23 +10,24 @@ library(lubridate)
 ```
 
 ```{r}
+
+df <- NULL
+
 files <- Sys.glob("processed/*")
-df <- read.csv(files[1])
-df_grp_doy <- group_by(df, doy) 
-df_doy <- summarize(df_grp_doy, mean(cica)) 
+for (fname in files) {
+  df_site <- read.csv(fname)
+  
+  df_grp_month <- group_by(df_site, month) 
+  df_month <- summarise_all(df_grp_month, funs(mean)) 
+  df_month$site <- substr(fname, 11, 16)
+  df_month$site <- as.factor(df_month$site) #so we can group colours by site
+  df <- rbind(df, df_month) 
+}
 
-plot(df$vpd)
-
-#df_grp_hod <- group_by(df, hour) 
-#df_hour <- summarise_all(df_grp_hod, funs(mean)) 
-#plot(df_hour$vpd)
-
-#for (fname in files[2:length(files)]) {
-#  df <- read.csv(fname)
-#  site_name <- substr(fname, 11, 16)
-#  print(ggplot(df,aes(doy, cica, col=site_name ))+geom_line())
-#  
-#}
+df$site <- as.factor(df$site)
+ggplot(df, aes(x=month, y=cica, group=site, color=site)) + 
+  geom_line() + 
+  theme_classic() 
 
 ```
 
