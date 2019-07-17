@@ -1,0 +1,51 @@
+---
+title: "Untitled"
+output: html_document
+---
+```{r}
+library(ggplot2)
+library(dplyr)
+library(ncdf4)
+library(lubridate)
+```
+
+```{r}
+
+# Create directory to save all processed files.
+out_dir <- "processed"
+if (!dir.exists(file.path(out_dir))) {
+  dir.create(file.path(out_dir))
+}
+
+# We're going to loop over each site, extract Ci:Ca, Tair etc and save to a CSV...
+files <- Sys.glob("outputs/*")
+for (fname in files) {
+  f <- nc_open(fname)
+  site_name <- substr(fname, 9, 14)
+  print(fname)
+  print(site_name)
+  cica <-ncvar_get(f, "cica")
+  Tair <-ncvar_get(f, "Tair")
+  qair <-ncvar_get(f, "Qair")
+  Fwsoil <-ncvar_get(f, "Fwsoil")
+
+  t <- ncvar_get(f, "time")
+  time_from <- substr(ncatt_get(f, "time")$units, 15, 33)
+  datetime <- as.POSIXct(t, origin=time_from, format = "%Y-%m-%d %H:%M")
+
+
+  #df <- data.frame(datetime, cica, Tair, qair, Fwsoil)
+  #colnames(df)<- c("datetime", "cica", "Tair", "qair", "Fwsoil")
+  df <- data.frame(datetime, cica)
+  colnames(df)<- c("datetime", "cica")
+  df$year <- year(df$date)
+  df$month <- month(df$date)
+  df$doy <- yday(df$date)
+  df <- df[df$cica > -500, ]
+  
+  out_fname <- sprintf("%s/%s_all_cica_env_data.csv", out_dir, site_name)
+  write.csv(df, file=out_fname)
+  
+  nc_close(f)
+}
+```

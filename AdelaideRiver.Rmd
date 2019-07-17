@@ -66,5 +66,7 @@ plot(df_year)
 ```{r}
 #df_summer <- df[((df$month == 12) & (df$month == 1) & (df$month == 2)), ]
 #plot(df_summer)
+
+df_summer <- df[df$month >= "1970-01-01" & myData$myDate <= "2016-06-27",]
 ```
 
