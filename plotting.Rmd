@@ -31,7 +31,30 @@ ggplot(df, aes(x=month, y=cica, group=site, color=site)) +
 
 ```
 
+```{r}
 
+# just plot the NATT
+df <- NULL
+
+files <- c("processed/AU-Ade_all_cica_env_data.csv", 
+           "processed/AU-DaS_all_cica_env_data.csv", 
+           "processed/AU-Dry_all_cica_env_data.csv", 
+           "processed/AU-How_all_cica_env_data.csv",
+           "processed/AU-Stp_all_cica_env_data.csv") 
+for (fname in files) {
+  df_site <- read.csv(fname)
+  
+  df_grp_month <- group_by(df_site, month) 
+  df_month <- summarise_all(df_grp_month, funs(mean)) 
+  df_month$site <- substr(fname, 11, 16)
+  df_month$site <- as.factor(df_month$site) #so we can group colours by site
+  df <- rbind(df, df_month) 
+}
+
+df$site <- as.factor(df$site)
+ggplot(df, aes(x=month, y=cica, group=site, color=site)) + 
+  geom_line() + 
+  theme_classic() 
 
 ```
 
