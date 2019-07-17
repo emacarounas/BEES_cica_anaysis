@@ -7,28 +7,26 @@ library(ggplot2)
 library(dplyr)
 library(ncdf4)
 library(lubridate)
-library(Rmisc)
-library(reshape2)
 ```
-
-```{r}
-
-#Plotting doy and looping for all sites into one figure 
-
-```
-
 
 ```{r}
 files <- Sys.glob("processed/*")
 df <- read.csv(files[1])
 df_grp_doy <- group_by(df, doy) 
 df_doy <- summarize(df_grp_doy, mean(cica)) 
-for (fname in files[2:length(files)]) {
-  df <- read.csv(fname)
-  site_name <- substr(fname, 11, 16)
-  print(ggplot(df,aes(doy, cica, col=site_name ))+geom_line())
-  
-}
+
+plot(df$vpd)
+
+#df_grp_hod <- group_by(df, hour) 
+#df_hour <- summarise_all(df_grp_hod, funs(mean)) 
+#plot(df_hour$vpd)
+
+#for (fname in files[2:length(files)]) {
+#  df <- read.csv(fname)
+#  site_name <- substr(fname, 11, 16)
+#  print(ggplot(df,aes(doy, cica, col=site_name ))+geom_line())
+#  
+#}
 
 ```
 

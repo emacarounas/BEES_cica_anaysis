@@ -1,3 +1,5 @@
+source("constants.R")
+
 qair_to_vpd <- function(qair, tair, press) {
   #
   #   Convert Qair to VPD
@@ -16,8 +18,6 @@ qair_to_vpd <- function(qair, tair, press) {
   #     vpd : float
   #       vapour pressure deficit [kPa]
   #
-  
-  PA_TO_KPA = 0.001
   
   # saturation vapor pressure
   es = 100.0 * 6.112 * exp((17.67 * tair) / (243.5 + tair))

@@ -10,6 +10,7 @@ library(lubridate)
 library(plyr)
 library(readr)
 
+source("constants.R")
 source("qair_to_vpd.R")
 ```
 
@@ -29,7 +30,7 @@ for (fname in files) {
   print(fname)
   print(site_name)
   cica <-ncvar_get(f, "cica")
-  tair <-ncvar_get(f, "Tair")
+  tair <-ncvar_get(f, "Tair") - DEG_2_KELVIN
   qair <-ncvar_get(f, "Qair")
   press <-ncvar_get(f, "PSurf")
   Fwsoil <-ncvar_get(f, "Fwsoil")
