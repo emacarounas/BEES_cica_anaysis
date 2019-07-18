@@ -7,32 +7,54 @@ library(ggplot2)
 library(dplyr)
 library(ncdf4)
 library(lubridate)
-library(Rmisc)
-library(reshape2)
 ```
 
 ```{r}
 
-#Plotting doy and looping for all sites into one figure 
+df <- NULL
 
-```
-
-
-```{r}
 files <- Sys.glob("processed/*")
-df <- read.csv(files[1])
-df_grp_doy <- group_by(df, doy) 
-df_doy <- summarize(df_grp_doy, mean(cica)) 
-for (fname in files[2:length(files)]) {
-  df <- read.csv(fname)
-  site_name <- substr(fname, 11, 16)
-  print(ggplot(df,aes(doy, cica, col=site_name ))+geom_line())
+for (fname in files) {
+  df_site <- read.csv(fname)
   
+  df_grp_month <- group_by(df_site, month) 
+  df_month <- summarise_all(df_grp_month, funs(mean)) 
+  df_month$site <- substr(fname, 11, 16)
+  df_month$site <- as.factor(df_month$site) #so we can group colours by site
+  df <- rbind(df, df_month) 
 }
 
+df$site <- as.factor(df$site)
+ggplot(df, aes(x=month, y=cica, group=site, color=site)) + 
+  geom_line() + 
+  theme_classic() 
+
 ```
 
+```{r}
 
+# just plot the NATT
+df <- NULL
+
+files <- c("processed/AU-Ade_all_cica_env_data.csv", 
+           "processed/AU-DaS_all_cica_env_data.csv", 
+           "processed/AU-Dry_all_cica_env_data.csv", 
+           "processed/AU-How_all_cica_env_data.csv",
+           "processed/AU-Stp_all_cica_env_data.csv") 
+for (fname in files) {
+  df_site <- read.csv(fname)
+  
+  df_grp_month <- group_by(df_site, month) 
+  df_month <- summarise_all(df_grp_month, funs(mean)) 
+  df_month$site <- substr(fname, 11, 16)
+  df_month$site <- as.factor(df_month$site) #so we can group colours by site
+  df <- rbind(df, df_month) 
+}
+
+df$site <- as.factor(df$site)
+ggplot(df, aes(x=month, y=cica, group=site, color=site)) + 
+  geom_line() + 
+  theme_classic() 
 
 ```
 
