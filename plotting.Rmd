@@ -9,30 +9,323 @@ library(ncdf4)
 library(lubridate)
 library(Rmisc)
 library(reshape2)
-```
-
-```{r}
-
-#Plotting doy and looping for all sites into one figure 
-
+library(scales)
 ```
 
 
+
 ```{r}
+#Plotting diurnal all sites
+
+df <- NULL
+
 files <- Sys.glob("processed/*")
-df <- read.csv(files[1])
-df_grp_doy <- group_by(df, doy) 
-df_doy <- summarize(df_grp_doy, mean(cica)) 
-for (fname in files[2:length(files)]) {
-  df <- read.csv(fname)
-  site_name <- substr(fname, 11, 16)
-  print(ggplot(df,aes(doy, cica, col=site_name ))+geom_line())
+for (fname in files) {
+  df_site <- read.csv(fname)
   
+  df_grp_hod <- group_by(df_site, hour) 
+  df_hour <- summarize_all(df_grp_hod, funs(mean)) 
+  df_hour$site <- substr(fname, 11, 16)
+  df_hour$site <- as.factor(df_hour$site) #so we can group colours by site
+  df <- rbind(df, df_hour) 
 }
 
+df$site <- as.factor(df$site)
+di_all <- ggplot(df, aes(x=hour, y=cica, group=site, color=site)) + 
+  geom_line() + 
+   ylab(expression("Ci:Ca")) +
+  xlab(expression("Hour")) +
+  theme_classic() 
+plot(di_all)
+
+ggsave("di_all.png")
+```
+
+
+```{r}
+#Plotting diurnal NATT
+
+df <- NULL
+files <- c("processed/AU-Ade_all_cica_env_data.csv", 
+           "processed/AU-DaS_all_cica_env_data.csv", 
+           "processed/AU-Dry_all_cica_env_data.csv", 
+           "processed/AU-How_all_cica_env_data.csv",
+           "processed/AU-Stp_all_cica_env_data.csv") 
+
+
+for (fname in files) {
+  df_site <- read.csv(fname)
+  
+  df_grp_hod <- group_by(df_site, hour) 
+  df_hour <- summarize_all(df_grp_hod, funs(mean)) 
+  df_hour$site <- substr(fname, 11, 16)
+  df_hour$site <- as.factor(df_hour$site) #so we can group colours by site
+  df <- rbind(df, df_hour) 
+}
+
+df$site <- as.factor(df$site)
+di_NATT <- ggplot(df, aes(x=hour, y=cica, group=site, color=site)) + 
+  geom_line() + 
+  ylab(expression("Ci:Ca")) +
+  xlab(expression("Hour")) +
+  theme_classic() 
+
+ggsave("di_NATT.png")
+```
+
+
+```{r}
+#Plotting diurnal Sth
+
+df <- NULL
+files <- c("processed/AU-Gin_all_cica_env_data.csv", 
+           "processed/AU-GWW_all_cica_env_data.csv", 
+           "processed/AU-Whr_all_cica_env_data.csv", 
+           "processed/AU-Tum_all_cica_env_data.csv",
+           "processed/AU-Cum_all_cica_env_data.csv") 
+
+
+for (fname in files) {
+  df_site <- read.csv(fname)
+  
+  df_grp_hod <- group_by(df_site, hour) 
+  df_hour <- summarize_all(df_grp_hod, funs(mean)) 
+  df_hour$site <- substr(fname, 11, 16)
+  df_hour$site <- as.factor(df_hour$site) #so we can group colours by site
+  df <- rbind(df, df_hour) 
+}
+
+df$site <- as.factor(df$site)
+di_sth <- ggplot(df, aes(x=hour, y=cica, group=site, color=site)) + 
+  geom_line() + 
+  ylab(expression("Ci:Ca")) +
+  xlab(expression("Hour")) +
+  theme_classic() 
+plot(di_sth)
+
+ggsave("di_sth.png")
+
+
+```
+
+
+```{r}
+#Plotting day all sites
+
+df <- NULL
+
+files <- Sys.glob("processed/*")
+for (fname in files) {
+  df_site <- read.csv(fname)
+  
+  df_grp_doy <- group_by(df_site, doy) 
+  df_doy <- summarize_all(df_grp_doy, funs(mean)) 
+  df_doy$site <- substr(fname, 11, 16)
+  df_doy$site <- as.factor(df_doy$site) #so we can group colours by site
+  df <- rbind(df, df_doy) 
+}
+
+df$site <- as.factor(df$site)
+doy_all <- ggplot(df, aes(x=doy, y=cica, group=site, color=site)) + 
+  geom_line() + 
+  ylab(expression("Ci:Ca")) +
+  xlab(expression("Day of Year")) +
+  theme_classic() 
+
+ggsave("doy_all.png")
+
 ```
 
 
 
+```{r}
+#Plotting day NATT sites
+
+df <- NULL
+
+df <- NULL
+files <- c("processed/AU-Ade_all_cica_env_data.csv", 
+           "processed/AU-DaS_all_cica_env_data.csv", 
+           "processed/AU-Dry_all_cica_env_data.csv", 
+           "processed/AU-How_all_cica_env_data.csv",
+           "processed/AU-Stp_all_cica_env_data.csv") 
+
+for (fname in files) {
+  df_site <- read.csv(fname)
+  
+  df_grp_doy <- group_by(df_site, doy) 
+  df_doy <- summarize_all(df_grp_doy, funs(mean)) 
+  df_doy$site <- substr(fname, 11, 16)
+  df_doy$site <- as.factor(df_doy$site) #so we can group colours by site
+  df <- rbind(df, df_doy) 
+}
+
+df$site <- as.factor(df$site)
+doy_NATT <- ggplot(df, aes(x=doy, y=cica, group=site, color=site)) + 
+  geom_line() + 
+  ylab(expression("Ci:Ca")) +
+  xlab(expression("Day of Year")) +
+  theme_classic() 
+
+ggsave("doy_NATT.png")
+
 ```
+
+
+```{r}
+#Plotting day Sth sites
+
+df <- NULL
+
+df <- NULL
+files <- c("processed/AU-Gin_all_cica_env_data.csv", 
+           "processed/AU-GWW_all_cica_env_data.csv", 
+           "processed/AU-Whr_all_cica_env_data.csv", 
+           "processed/AU-Tum_all_cica_env_data.csv",
+           "processed/AU-Cum_all_cica_env_data.csv") 
+
+
+for (fname in files) {
+  df_site <- read.csv(fname)
+  
+  df_grp_doy <- group_by(df_site, doy) 
+  df_doy <- summarize_all(df_grp_doy, funs(mean)) 
+  df_doy$site <- substr(fname, 11, 16)
+  df_doy$site <- as.factor(df_doy$site) #so we can group colours by site
+  df <- rbind(df, df_doy) 
+}
+
+df$site <- as.factor(df$site)
+doy_sth <- ggplot(df, aes(x=doy, y=cica, group=site, color=site)) + 
+  geom_line() + 
+  ylab(expression("Ci:Ca")) +
+  xlab(expression("Day of Year")) +
+  theme_classic() 
+
+ggsave("doy_sth.png")
+
+```
+
+
+
+
+```{r}
+
+#Plotting month all sites
+
+df <- NULL
+
+files <- Sys.glob("processed/*")
+for (fname in files) {
+  df_site <- read.csv(fname)
+  
+  df_grp_month <- group_by(df_site, month) 
+  df_month <- summarise_all(df_grp_month, funs(mean)) 
+  df_month$site <- substr(fname, 11, 16)
+  df_month$site <- as.factor(df_month$site) #so we can group colours by site
+  df <- rbind(df, df_month) 
+}
+
+df$site <- as.factor(df$site)
+mon_all <- ggplot(df, aes(x=month, y=cica, group=site, color=site)) + 
+  geom_line() + 
+  ylab(expression("Ci:Ca")) +
+  xlab(expression("Month")) +
+  theme_classic() 
+
+ggsave("mon_all.png")
+```
+
+
+```{r}
+#Plot the NATT by month
+df <- NULL
+
+files <- c("processed/AU-Ade_all_cica_env_data.csv", 
+           "processed/AU-DaS_all_cica_env_data.csv", 
+           "processed/AU-Dry_all_cica_env_data.csv", 
+           "processed/AU-How_all_cica_env_data.csv",
+           "processed/AU-Stp_all_cica_env_data.csv") 
+for (fname in files) {
+  df_site <- read.csv(fname)
+  
+  df_grp_month <- group_by(df_site, month) 
+  df_month <- summarise_all(df_grp_month, funs(mean)) 
+  df_month$site <- substr(fname, 11, 16)
+  df_month$site <- as.factor(df_month$site) #so we can group colours by site
+  df <- rbind(df, df_month) 
+}
+
+df$site <- as.factor(df$site)
+mon_NATT <- ggplot(df, aes(x=month, y=cica, group=site, color=site)) + 
+  geom_line() + 
+  ylab(expression("Ci:Ca")) +
+  xlab(expression("Month")) +
+  theme_classic() 
+plot(mon_NATT)
+
+ggsave("mon_NATT.png")
+```
+
+
+```{r}
+#Plot the Sth by month
+df <- NULL
+
+files <- c("processed/AU-Gin_all_cica_env_data.csv", 
+           "processed/AU-GWW_all_cica_env_data.csv", 
+           "processed/AU-Whr_all_cica_env_data.csv", 
+           "processed/AU-Tum_all_cica_env_data.csv",
+           "processed/AU-Cum_all_cica_env_data.csv") 
+ 
+for (fname in files) {
+  df_site <- read.csv(fname)
+  
+  df_grp_month <- group_by(df_site, month) 
+  df_month <- summarise_all(df_grp_month, funs(mean)) 
+  df_month$site <- substr(fname, 11, 16)
+  df_month$site <- as.factor(df_month$site) #so we can group colours by site
+  df <- rbind(df, df_month) 
+}
+
+df$site <- as.factor(df$site)
+mon_sth <- ggplot(df, aes(x=month, y=cica, group=site, color=site)) + 
+  geom_line() + 
+  ylab(expression("Ci:Ca")) +
+  xlab(expression("Month")) +
+  theme_classic() 
+plot(mon_sth)
+ggsave("mon_sth.png")
+```
+
+
+
+```{r}
+#Plotting annual all sites (probably uneccessary because not all have same length of data)
+
+df <- NULL
+
+files <- Sys.glob("processed/*")
+for (fname in files) {
+  df_site <- read.csv(fname)
+  
+  df_grp_year <- group_by(df_site, year) 
+  df_year <- summarise_all(df_grp_year, funs(mean)) 
+  df_year$site <- substr(fname, 11, 16)
+  df_year$site <- as.factor(df_year$site) #so we can group colours by site
+  df <- rbind(df, df_year) 
+}
+
+df$site <- as.factor(df$site)
+ggplot(df, aes(x=year, y=cica, group=site, color=site)) + 
+  geom_line() + 
+  theme_classic()
+```
+
+
+
+
+
+
+
 

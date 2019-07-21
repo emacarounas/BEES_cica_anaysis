@@ -1,0 +1,47 @@
+---
+title: "controls_analysis"
+output: html_document
+---
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(ncdf4)
+library(lubridate)
+library(Rmisc)
+library(reshape2)
+library(scales)
+```
+
+
+```{r}
+df <- NULL
+
+files <- Sys.glob("processed/*")
+for (fname in files) {
+  df_site <- read.csv(fname)
+  
+  df_grp_vpd <- group_by(df_site, vpd) 
+  df_vpd <- summarize_all(df_grp_vpd, funs(mean)) 
+  df_vpd$site <- substr(fname, 11, 16)
+  df_vpd$site <- as.factor(df_vpd$site) #so we can group colours by site
+  df <- rbind(df, df_vpd) 
+}
+
+df$site <- as.factor(df$site)
+vpd_all <- ggplot(df, aes(x=vpd, y=cica, group=site, color=site)) + 
+  geom_line() + 
+   ylab(expression("Ci:Ca")) +
+  xlab(expression("VPD")) +
+  theme_classic() 
+plot(vpd_all)
+
+
+
+```
+
+```{r}
+model <- lm(cica ~ vpd, data = df)
+  summary(model)
+```
+
