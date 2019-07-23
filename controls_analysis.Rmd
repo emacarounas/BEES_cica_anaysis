@@ -11,7 +11,25 @@ library(lubridate)
 library(Rmisc)
 library(reshape2)
 library(scales)
+library(visreg)
 ```
+
+```{r}
+# multi linear regression analysis
+
+model <- lm(cica ~ vpd + Fwsoil, data = df)
+  summary(model)
+  ggsave("model.png")
+  
+# regression plots
+reg_vpd <- visreg(model, "vpd", xlab = "VPD", ylab = "Ci:Ca")
+reg_fwsoil <- visreg(model, "Fwsoil", xlab = "Fwsoil", ylab = "Ci:Ca")
+
+
+
+#by region??
+```
+
 
 
 ```{r}
@@ -37,19 +55,55 @@ for (fname in files) {
 }
 
 df$site <- as.factor(df$site)
-vpd_all <- ggplot(df, aes(x=vpd, y=cica, group=site, color=site)) + 
+vpd_NATT <- ggplot(df, aes(x=vpd, y=cica, group=site, color=site)) + 
   geom_line() + 
    ylab(expression("Ci:Ca")) +
   xlab(expression("VPD")) +
   theme_classic() 
-plot(vpd_all)
+plot(vpd_NATT)
 
 
 
 ```
 
 ```{r}
-model <- lm(cica ~ vpd, data = df)
-  summary(model)
+
+#VPD by Sth
+df <- NULL
+files <- c("processed/AU-Gin_all_cica_env_data.csv", 
+           "processed/AU-GWW_all_cica_env_data.csv", 
+           "processed/AU-Whr_all_cica_env_data.csv", 
+           "processed/AU-Tum_all_cica_env_data.csv",
+           "processed/AU-Cum_all_cica_env_data.csv") 
+
+
+for (fname in files) {
+  df_site <- read.csv(fname)
+  
+  
+  df_grp_vpd <- group_by(df_site, vpd) 
+  df_vpd <- summarize_all(df_grp_vpd, funs(mean)) 
+  df_vpd$site <- substr(fname, 11, 16)
+  df_vpd$site <- as.factor(df_vpd$site) #so we can group colours by site
+  df <- rbind(df, df_vpd) 
+}
+
+df$site <- as.factor(df$site)
+vpd_sth <- ggplot(df, aes(x=vpd, y=cica, group=site, color=site)) + 
+  geom_line() + 
+   ylab(expression("Ci:Ca")) +
+  xlab(expression("VPD")) +
+  theme_classic() 
+plot(vpd_sth)
+
+
+
 ```
+
+```{r}
+Sth <- c("AU-Gin", "Au-GWW", "AuWhr", "Au-Tum", "Au-Cum")
+NATT <- c("Au-Ade", "Au-DaS", "Au-Dry", "Au-How", "Au-Stp")
+df$region = rbind(Sth, NATT)        
+```
+
 

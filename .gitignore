@@ -4,3 +4,4 @@
 .Ruserdata
 data/*.nc
 *.nc
+.DS_Store
