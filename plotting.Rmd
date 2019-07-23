@@ -7,9 +7,12 @@ library(ggplot2)
 library(dplyr)
 library(ncdf4)
 library(lubridate)
+<<<<<<< HEAD
 library(Rmisc)
 library(reshape2)
 library(scales)
+=======
+>>>>>>> 57c314a99072b1ed58795228dc43b237f046f216
 ```
 
 
@@ -30,6 +33,7 @@ for (fname in files) {
   df <- rbind(df, df_hour) 
 }
 
+<<<<<<< HEAD
 df$site <- as.factor(df$site)
 di_all <- ggplot(df, aes(x=hour, y=cica, group=site, color=site)) + 
   geom_line() + 
@@ -114,10 +118,15 @@ ggsave("di_sth.png")
 
 df <- NULL
 
+=======
+df <- NULL
+
+>>>>>>> 57c314a99072b1ed58795228dc43b237f046f216
 files <- Sys.glob("processed/*")
 for (fname in files) {
   df_site <- read.csv(fname)
   
+<<<<<<< HEAD
   df_grp_doy <- group_by(df_site, doy) 
   df_doy <- summarize_all(df_grp_doy, funs(mean)) 
   df_doy$site <- substr(fname, 11, 16)
@@ -134,9 +143,46 @@ doy_all <- ggplot(df, aes(x=doy, y=cica, group=site, color=site)) +
 
 ggsave("doy_all.png")
 
+=======
+  df_grp_month <- group_by(df_site, month) 
+  df_month <- summarise_all(df_grp_month, funs(mean)) 
+  df_month$site <- substr(fname, 11, 16)
+  df_month$site <- as.factor(df_month$site) #so we can group colours by site
+  df <- rbind(df, df_month) 
+}
+
+df$site <- as.factor(df$site)
+ggplot(df, aes(x=month, y=cica, group=site, color=site)) + 
+  geom_line() + 
+  theme_classic() 
+
+>>>>>>> 57c314a99072b1ed58795228dc43b237f046f216
 ```
 
+```{r}
 
+# just plot the NATT
+df <- NULL
+
+files <- c("processed/AU-Ade_all_cica_env_data.csv", 
+           "processed/AU-DaS_all_cica_env_data.csv", 
+           "processed/AU-Dry_all_cica_env_data.csv", 
+           "processed/AU-How_all_cica_env_data.csv",
+           "processed/AU-Stp_all_cica_env_data.csv") 
+for (fname in files) {
+  df_site <- read.csv(fname)
+  
+  df_grp_month <- group_by(df_site, month) 
+  df_month <- summarise_all(df_grp_month, funs(mean)) 
+  df_month$site <- substr(fname, 11, 16)
+  df_month$site <- as.factor(df_month$site) #so we can group colours by site
+  df <- rbind(df, df_month) 
+}
+
+df$site <- as.factor(df$site)
+ggplot(df, aes(x=month, y=cica, group=site, color=site)) + 
+  geom_line() + 
+  theme_classic() 
 
 ```{r}
 #Plotting day NATT sites
