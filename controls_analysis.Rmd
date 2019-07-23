@@ -15,9 +15,17 @@ library(scales)
 
 
 ```{r}
-df <- NULL
 
-files <- Sys.glob("processed/*")
+#Plotting VPD by  NATT
+
+df <- NULL
+files <- c("processed/AU-Ade_all_cica_env_data.csv", 
+           "processed/AU-DaS_all_cica_env_data.csv", 
+           "processed/AU-Dry_all_cica_env_data.csv", 
+           "processed/AU-How_all_cica_env_data.csv",
+           "processed/AU-Stp_all_cica_env_data.csv") 
+
+
 for (fname in files) {
   df_site <- read.csv(fname)
   

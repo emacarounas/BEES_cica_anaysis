@@ -36,9 +36,12 @@ df$doy <- yday(df$date)
 df$hour <- hour(df$date)
 df$season <-season(df$date)
 df <- df[df$cica > -500, ]
+
+
+
 ```
 
-
+df <- transform(df, month = month.abb[month]) #convert month numerical to abbreviation
 
 ```{r}
 plot(df$datetime, df$cica)
