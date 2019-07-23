@@ -1,0 +1,63 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+
+```{r}
+library("ggplot2")
+
+
+calc_ci_over_ca <- function(g1, beta, D) {
+  # Add Medlyn ref here.
+  ci_over_ca <- (g1*beta) / ((g1*beta) + sqrt(D))
+  
+  return (ci_over_ca)
+}
+
+#gi = water use trategy of plant (different species, low = conservative, high = lots of water)
+#eg. euc = 2 
+```
+
+```{r}
+g1 = 4 # kPa^0.5
+D = seq(0.05, 6, 0.05) # VPD kPa
+beta = 1
+ci_over_ca_g14 = calc_ci_over_ca(g1, beta, D)
+
+thry_vpd <- plot(D, ci_over_ca_g14, type="l", xlab = "VPD",
+    ylab = "Ci:Ca")
+plot(thry_vpd)
+
+```
+
+
+
+
+```{r}
+beta <- seq(0, 1, 0.1)
+D = 2
+ci_over_ca_d2 = calc_ci_over_ca(g1, beta, D)
+D = 5
+ci_over_ca_d5 = calc_ci_over_ca(g1, beta, D)
+D=10
+ci_over_ca_d10 = calc_ci_over_ca(g1, beta, D)
+
+
+
+thry_beta <-plot(beta, ci_over_ca_d2, type="l",col="blue",  xlab = "Beta",
+    ylab = "Ci:Ca")
+lines(beta, ci_over_ca_d5, col="green 3")
+lines(beta, ci_over_ca_d10, col="red")
+legend("bottomright", c("VPD = 2", "VPD = 5", "VPD = 10"), lty=c(1, 1, 1), lwd=c(2.5, 2.5, 2.5), col=c("blue", "green 3", "red"))
+
+plot(thry_beta)
+
+
+
+```
+
+```{r}
+
+```
+
