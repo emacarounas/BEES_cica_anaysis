@@ -5,3 +5,6 @@
 data/*.nc
 *.nc
 .DS_Store
+figs_controls/*
+figs_theory/*
+figs_time/*
