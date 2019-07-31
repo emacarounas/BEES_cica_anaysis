@@ -13,10 +13,12 @@ library(readr)
 library(ggridges)
 ```
 
+
 Gingin
 ```{r}
+
 files <- Sys.glob("outputs/*")
-fname <-files[6]
+fname <-files[8]
 f <- nc_open(fname)
 head(f)
 
@@ -24,6 +26,8 @@ head(f)
 cica <-ncvar_get(f, "cica")
 t <- ncvar_get(f, "time")
 tair <-ncvar_get(f, "Tair") - DEG_2_KELVIN
+Prec <-ncvar_get(f, "Rainf") 
+Prec <- Prec*86400
 
 
 #Converting 'time_from' untis to min, hr, d, m, y values
@@ -32,26 +36,83 @@ datetime <- as.POSIXct(t, origin=time_from, format = "%Y-%m-%d %H:%M")
 
 #Creating data frame 
 
-d_f <- data.frame(datetime, cica, tair)
-  colnames(d_f)<- c("datetime", "cica", "tair")
+
+d_f <- data.frame(datetime, cica, tair, Prec, site)
+  colnames(d_f)<- c("datetime", "cica", "tair", "Prec", "site")
   d_f$year <- year(d_f$date)
   d_f$month <- month(d_f$date)
+  d_f$week <- week(d_f$date)
+  d_f$doy <- yday(d_f$date)
+  d_f$hour <- hour(d_f$date)
 
   d_f <- d_f[d_f$cica > -500, ]
+ 
   
 d_f_grp_month <- group_by(d_f, month) 
 d_f_month <- summarize(d_f_grp_month, mean(cica))
 
+d_f <- transform(d_f, month = month.abb[month])
+d_f$month <-factor(d_f$month, 
+                      levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"))
+
+
 ```
+
 
 
 ```{r}
 
 
+#Stp dry period (needs to be plotted against rainfall)
 
-ggplot(d_f, aes(x=month, y=cica, group=, col= "2012")) + geom_line() +
+d_f$year <- factor(d_f$year)
+
+#d_f %>% filter(year %in% c("2012", "2013", "2014")) %>%
+ggplot(d_f, aes(x=month, y=cica, group=year, color=year)) + 
   ylab(expression("Ci:Ca")) +
-  xlab(expression("Month")) 
+  xlab(expression("Month")) +
+  geom_smooth(fill=NA)
+  
+  
+
+
 ```
 
+
+```{r}
+d_f$year <- factor(d_f$year)
+
+#d_f %>% filter(year %in% c("2012", "2013", "2014")) %>%
+ggplot(d_f, aes(x=month, y=Prec, group=year, color=year)) + 
+  ylab(expression("Rainfall [mm/day]")) +
+  xlab(expression("Month")) +
+  geom_smooth(fill=NA)
+```
+
+```{r}
+#Ci:Ca - Stp heatwave 1-18 Jan 2013 (van Gorsel et al. 2016)
+
+d_f$year <- factor(d_f$year)
+
+d_f %>% filter(year %in% c("2012", "2013", "2014")) %>%
+ggplot(aes(x=doy, y=cica, group=year, color=year)) + 
+  ylab(expression("Ci:Ca")) +
+  xlab(expression("Day of Year")) +
+  geom_smooth(fill = NA) +
+  xlim(1, 20)
+```
+
+```{r}
+#Temp - Stp heatwave 1-18 Jan 2013 (van Gorsel et al. 2016)
+
+d_f$year <- factor(d_f$year)
+
+d_f %>% filter(year %in% c("2012", "2013", "2014")) %>%
+ggplot(aes(x=doy, y=tair, group=year, color=year)) + 
+  ylab(expression("Temperature")) +
+  xlab(expression("Day of Year")) +
+  geom_smooth(fill = NA) +
+  xlim(1, 20)
+```
 
