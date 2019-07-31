@@ -1,0 +1,57 @@
+---
+title: "climate_event"
+output: html_document
+---
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(ncdf4)
+library(lubridate)
+library(plyr)
+library(readr)
+library(ggridges)
+```
+
+Gingin
+```{r}
+files <- Sys.glob("outputs/*")
+fname <-files[6]
+f <- nc_open(fname)
+head(f)
+
+#Extracting variables from ncdf file
+cica <-ncvar_get(f, "cica")
+t <- ncvar_get(f, "time")
+tair <-ncvar_get(f, "Tair") - DEG_2_KELVIN
+
+
+#Converting 'time_from' untis to min, hr, d, m, y values
+time_from <- substr(ncatt_get(f, "time")$units, 15, 33) #
+datetime <- as.POSIXct(t, origin=time_from, format = "%Y-%m-%d %H:%M")
+
+#Creating data frame 
+
+d_f <- data.frame(datetime, cica, tair)
+  colnames(d_f)<- c("datetime", "cica", "tair")
+  d_f$year <- year(d_f$date)
+  d_f$month <- month(d_f$date)
+
+  d_f <- d_f[d_f$cica > -500, ]
+  
+d_f_grp_month <- group_by(d_f, month) 
+d_f_month <- summarize(d_f_grp_month, mean(cica))
+
+```
+
+
+```{r}
+
+
+
+ggplot(d_f, aes(x=month, y=cica, group=, col= "2012")) + geom_line() +
+  ylab(expression("Ci:Ca")) +
+  xlab(expression("Month")) 
+```
+
+
