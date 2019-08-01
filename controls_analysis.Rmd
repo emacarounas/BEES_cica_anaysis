@@ -5,104 +5,61 @@ output: html_document
 
 ```{r}
 library(ggplot2)
-library(dplyr)
-library(ncdf4)
-library(lubridate)
-library(Rmisc)
-library(reshape2)
-library(scales)
 library(visreg)
+library(lme4)
 ```
 
 ```{r}
 # multi linear regression analysis
 
-model <- lm(cica ~ vpd + Fwsoil, data = df)
+model <- lm(cica ~ vpd + Fwsoil + vpd * Fwsoil + site, data = df)
   summary(model)
-  ggsave("model.png")
+
   
 # regression plots
 reg_vpd <- visreg(model, "vpd", xlab = "VPD", ylab = "Ci:Ca")
 reg_fwsoil <- visreg(model, "Fwsoil", xlab = "Fwsoil", ylab = "Ci:Ca")
 
 
+ggplot(model, aes(x=vpd, y=cica, group= site, col=site)) + geom_smooth(fill=NA)
+ggplot(model, aes(x=Fwsoil, y=cica, group= site, col=site)) + geom_smooth(fill=NA) + ylim(0, 2.5)
 
-#by region??
 ```
 
 
-
 ```{r}
-
-#Plotting VPD by  NATT
-
-df <- NULL
-files <- c("processed/AU-Ade_all_cica_env_data.csv", 
-           "processed/AU-DaS_all_cica_env_data.csv", 
-           "processed/AU-Dry_all_cica_env_data.csv", 
-           "processed/AU-How_all_cica_env_data.csv",
-           "processed/AU-Stp_all_cica_env_data.csv") 
-
-
-for (fname in files) {
-  df_site <- read.csv(fname)
-  
-  df_grp_vpd <- group_by(df_site, vpd) 
-  df_vpd <- summarize_all(df_grp_vpd, funs(mean)) 
-  df_vpd$site <- substr(fname, 11, 16)
-  df_vpd$site <- as.factor(df_vpd$site) #so we can group colours by site
-  df <- rbind(df, df_vpd) 
-}
-
-df$site <- as.factor(df$site)
-vpd_NATT <- ggplot(df, aes(x=vpd, y=cica, group=site, color=site)) + 
-  geom_line() + 
-   ylab(expression("Ci:Ca")) +
-  xlab(expression("VPD")) +
-  theme_classic() 
-plot(vpd_NATT)
-
+mmodel <- lmer(cica ~ vpd + Fwsoil + (1|site), data = df, REML=T)
+mmodel1 <- lmer(cica ~ (1|site), data=df, REML=F)
+anova(mmodel, mmodel1)
 
 
 ```
 
 ```{r}
-
-#VPD by Sth
-df <- NULL
-files <- c("processed/AU-Gin_all_cica_env_data.csv", 
-           "processed/AU-GWW_all_cica_env_data.csv", 
-           "processed/AU-Whr_all_cica_env_data.csv", 
-           "processed/AU-Tum_all_cica_env_data.csv",
-           "processed/AU-Cum_all_cica_env_data.csv") 
-
-
-for (fname in files) {
-  df_site <- read.csv(fname)
-  
-  
-  df_grp_vpd <- group_by(df_site, vpd) 
-  df_vpd <- summarize_all(df_grp_vpd, funs(mean)) 
-  df_vpd$site <- substr(fname, 11, 16)
-  df_vpd$site <- as.factor(df_vpd$site) #so we can group colours by site
-  df <- rbind(df, df_vpd) 
+nBoot=1000
+lrStat=rep(NA,nBoot)
+ft.null <- lm(cica~vpd,data=df)#null model
+ft.alt <- lmer(cica~vpd+(1|site),data=df,REML=F)#alternate model
+lrObs <- 2*logLik(ft.alt) - 2*logLik(ft.null) #observed test stat
+for(iBoot in 1:nBoot)
+{
+  df$cicaSim=unlist(simulate(ft.null)) #resampled data
+  bNull <- lm(cicaSim~vpd,data=df)#null model
+  bAlt <- lmer(cicaSim~vpd+(1|site),data=df,REML=F)#alternate model
+  lrStat[iBoot] <- 2*logLik(bAlt) - 2*logLik(bNull)#resampled test stat
 }
-
-df$site <- as.factor(df$site)
-vpd_sth <- ggplot(df, aes(x=vpd, y=cica, group=site, color=site)) + 
-  geom_line() + 
-   ylab(expression("Ci:Ca")) +
-  xlab(expression("VPD")) +
-  theme_classic() 
-plot(vpd_sth)
-
-
-
+mean(lrStat>lrObs) #P-value for test of Estuary effect
 ```
+
+
+
+
+
+
 
 ```{r}
 Sth <- c("AU-Gin", "Au-GWW", "AuWhr", "Au-Tum", "Au-Cum")
-NATT <- c("Au-Ade", "Au-DaS", "Au-Dry", "Au-How", "Au-Stp")
+NATT <- c("Au-How", "Au-Ade", "Au-DaS", "Au-Dry", "Au-Stp")
 df$region = rbind(Sth, NATT)        
 ```
 
