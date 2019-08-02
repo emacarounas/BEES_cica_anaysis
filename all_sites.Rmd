@@ -28,6 +28,9 @@ files <- Sys.glob("outputs/*")
 for (fname in files) {
   f <- nc_open(fname)
   site_name <- substr(fname, 9, 14)
+ 
+  
+  
   print(fname)
   print(site_name)
   cica <-ncvar_get(f, "cica")
@@ -52,6 +55,7 @@ for (fname in files) {
   df$hour <- hour(df$date)
   df <- df[df$cica > -500, ]
   
+
   
   
   out_fname <- sprintf("%s/%s_all_cica_env_data.csv", out_dir, site_name)
@@ -61,4 +65,7 @@ for (fname in files) {
 }
 ```
 
-
+df <- transform(df, month = month.abb[month])
+  df$month <-factor(df$month, 
+                      levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")) 

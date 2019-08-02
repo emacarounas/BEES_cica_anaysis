@@ -16,15 +16,15 @@ source("constants.R")
 source("qair_to_vpd.R")
 ```
 
-
+Dry_2009-2016
 
 
 ```{r}
 
 #Create site data frame for climate extreme
 
-files <- Sys.glob("outputs/*")
-fname <-files[10]
+#files <- Sys.glob("outputs/*")
+fname <-"outputs/AU-Whr_2012-2016_OzFlux_Met_out.nc"
 f <- nc_open(fname)
 head(f)
 
@@ -34,7 +34,7 @@ t <- ncvar_get(f, "time")
 tair <-ncvar_get(f, "Tair") - DEG_2_KELVIN
 Fwsoil <-ncvar_get(f, "Fwsoil")
 Prec <-ncvar_get(f, "Rainf") 
-Prec <- Prec*86400
+Prec <- Prec
 qair <-ncvar_get(f, "Qair")
 press <-ncvar_get(f, "PSurf")
 vpd <- qair_to_vpd(qair, tair, press)
@@ -67,6 +67,18 @@ d_f$month <-factor(d_f$month,
 
 
 ```
+```{r}
+df_pre <- data.frame(datetime, Prec*86400)
+  colnames(df_pre)<- c("datetime", "Prec")
+  df_pre$year <- year(df_pre$date)
+  df_pre$doy <- yday(df_pre$date)
+
+  df_grp_doy <- group_by(df_pre, doy)
+  df_doy <- summarize_all(df_grp_doy, funs(mean))
+  
+
+plot(df_doy$Prec)
+```
 
 
 
@@ -78,7 +90,7 @@ d_f$month <-factor(d_f$month,
  
   d_f$year <- factor(d_f$year)
    
-  d_f %>% filter(year %in% c("2009", "2011", "2013", "2015")) %>%
+  d_f %>% filter(year %in% c("2009", "2011", "2013", "2015", "2017")) %>%
   ggplot(aes(x=month, y=cica, group=year, color=year)) + 
   ylab(expression("Ci:Ca")) +
   xlab(expression("Month")) +
@@ -92,14 +104,16 @@ d_f$month <-factor(d_f$month,
 
 
 ```{r}
+#drought- rainfall
 d_f$year <- factor(d_f$year)
 
 d_f %>% filter(year %in% c("2009", "2011", "2013", "2015")) %>%
-ggplot(aes(x=month, y=Prec, group=year, color=year)) + 
-  ylab(expression("Rainfall [mm/day]")) +
+ggplot(aes(x=month, y=Prec*86400/30, group=year, color=year)) + 
+  ylab(expression("Mean Monthly Rainfall [mm]")) +
   xlab(expression("Month")) +
-  geom_smooth(fill=NA)
+  geom_bar(stat="identity", aes(fill = year), position = "dodge")
 ```
+
 
 ```{r}
 #drought VPD
@@ -125,16 +139,13 @@ ggplot(aes(x=month, y=Fwsoil, group=year, color=year)) +
 ```
 
 
-```{r}
-
-```
 
 ```{r}
 #Ci:Ca - heatwave 1-18 Jan 2013 (van Gorsel et al. 2016)
 
 d_f$year <- factor(d_f$year)
 
-d_f %>% filter(year %in% c("2013", "2014", "2015")) %>%
+d_f %>% filter(year %in% c("2013", "2014")) %>%
 ggplot(aes(x=doy, y=cica, group=year, color=year)) + 
   ylab(expression("Ci:Ca")) +
   xlab(expression("Day of Year")) +
@@ -147,9 +158,9 @@ ggplot(aes(x=doy, y=cica, group=year, color=year)) +
 
 d_f$year <- factor(d_f$year)
 
-d_f %>% filter(year %in% c("2013", "2014", "2015")) %>%
+d_f %>% filter(year %in% c("2013", "2014")) %>%
 ggplot(aes(x=doy, y=tair, group=year, color=year)) + 
-  ylab(expression("Temperature")) +
+  ylab(expression("Temperature [° C]")) +
   xlab(expression("Day of Year")) +
   geom_smooth(fill = NA) +
   xlim(1, 20)
@@ -158,11 +169,31 @@ ggplot(aes(x=doy, y=tair, group=year, color=year)) +
 ```{r}
 d_f$year <- factor(d_f$year)
 
-d_f %>% filter(year %in% c("2012", "2013", "2014")) %>%
+d_f %>% filter(year %in% c("2013", "2014")) %>%
 ggplot(aes(x=doy, y=vpd, group=year, color=year)) + 
   ylab(expression("VPD")) +
   xlab(expression("Day of Year")) +
   geom_smooth(fill = NA) +
   xlim(1, 20)
+```
+
+```{r}
+d_f$year <- factor(d_f$year)
+
+d_f %>% filter(year %in% c("2013", "2014")) %>%
+ggplot(aes(x=month, y=cica, group=year, color=year)) + 
+  ylab(expression("Ci:Ca")) +
+  xlab(expression("Month")) +
+  geom_smooth(fill = NA)
+```
+
+```{r}
+d_f$year <- factor(d_f$year)
+
+d_f %>% filter(year %in% c("2013", "2014")) %>%
+ggplot(aes(x=month, y=Prec*8640, group=year, color=year)) + 
+  ylab(expression("Mean Monthy Rainfall [mm]")) +
+  xlab(expression("Month")) +
+  geom_bar(stat="identity", aes(fill = year), position = "dodge")
 ```
 

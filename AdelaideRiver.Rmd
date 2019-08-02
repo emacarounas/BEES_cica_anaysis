@@ -11,6 +11,7 @@ library(tidyverse)
 library(sp)
 ```
 
+Adelaide River
 ```{r}
 #Opening ncdf file
 files <- Sys.glob("outputs/*")
@@ -22,6 +23,8 @@ f
 #Extracting variables from ncdf file
 cica <-ncvar_get(f, "cica")
 t <- ncvar_get(f, "time")
+rain <-ncvar_get(f, "Rainf")
+rain
 
 #Converting 'time_from' untis to min, hr, d, m, y values
 time_from <- substr(ncatt_get(f, "time")$units, 15, 33) #
@@ -50,8 +53,9 @@ plot(df$datetime, df$cica)
 ```{r}
 #Diurnal plot
 df_grp_hod <- group_by(df, hour) 
-df_hour <- summarize(df_grp_hod, mean(cica)) 
+df_hour <- summarize(df_grp_hod, mean(cica))
 plot(df_hour)
+
 ```
 
 ```{r}
@@ -66,6 +70,8 @@ plot(df_doy)
 df_grp_month <- group_by(df, month) 
 df_month <- summarize(df_grp_month, mean(cica)) 
 plot(df_month)
+
+ggplot()
 ```
 
 

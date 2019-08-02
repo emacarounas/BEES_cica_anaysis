@@ -7,12 +7,6 @@ library(ggplot2)
 library(dplyr)
 library(ncdf4)
 library(lubridate)
-<<<<<<< HEAD
-library(Rmisc)
-library(reshape2)
-library(scales)
-=======
->>>>>>> 57c314a99072b1ed58795228dc43b237f046f216
 ```
 
 
@@ -33,7 +27,6 @@ for (fname in files) {
   df <- rbind(df, df_hour) 
 }
 
-<<<<<<< HEAD
 df$site <- as.factor(df$site)
 di_all <- ggplot(df, aes(x=hour, y=cica, group=site, color=site)) + 
   geom_line() + 
@@ -42,44 +35,14 @@ di_all <- ggplot(df, aes(x=hour, y=cica, group=site, color=site)) +
   theme_classic() 
 plot(di_all)
 
-ggsave("di_all.png")
+#ggsave("di_all.png")
 ```
 
 
-```{r}
-#Plotting diurnal NATT
-
-df <- NULL
-files <- c("processed/AU-Ade_all_cica_env_data.csv", 
-           "processed/AU-DaS_all_cica_env_data.csv", 
-           "processed/AU-Dry_all_cica_env_data.csv", 
-           "processed/AU-How_all_cica_env_data.csv",
-           "processed/AU-Stp_all_cica_env_data.csv") 
-
-
-for (fname in files) {
-  df_site <- read.csv(fname)
-  
-  df_grp_hod <- group_by(df_site, hour) 
-  df_hour <- summarize_all(df_grp_hod, funs(mean)) 
-  df_hour$site <- substr(fname, 11, 16)
-  df_hour$site <- as.factor(df_hour$site) #so we can group colours by site
-  df <- rbind(df, df_hour) 
-}
-
-df$site <- as.factor(df$site)
-di_NATT <- ggplot(df, aes(x=hour, y=cica, group=site, color=site)) + 
-  geom_line() + 
-  ylab(expression("Ci:Ca")) +
-  xlab(expression("Hour")) +
-  theme_classic() 
-
-ggsave("di_NATT.png")
-```
 
 
 ```{r}
-#Plotting diurnal Sth
+#plotting diurnal Sth
 
 df <- NULL
 files <- c("processed/AU-Gin_all_cica_env_data.csv", 
@@ -101,13 +64,44 @@ for (fname in files) {
 
 df$site <- as.factor(df$site)
 di_sth <- ggplot(df, aes(x=hour, y=cica, group=site, color=site)) + 
+ 
   geom_line() + 
   ylab(expression("Ci:Ca")) +
   xlab(expression("Hour")) +
   theme_classic() 
 plot(di_sth)
+```
 
-ggsave("di_sth.png")
+```{r}
+#Plotting diurnal NATTT
+
+df <- NULL
+files <- c("processed/AU-How_all_cica_env_data.csv",
+           "processed/AU-Ade_all_cica_env_data.csv", 
+           "processed/AU-DaS_all_cica_env_data.csv", 
+           "processed/AU-Dry_all_cica_env_data.csv", 
+           "processed/AU-Stp_all_cica_env_data.csv") 
+
+
+for (fname in files) {
+  df_site <- read.csv(fname)
+  
+  df_grp_hod <- group_by(df_site, hour) 
+  df_hour <- summarize_all(df_grp_hod, funs(mean)) 
+  df_hour$site <- substr(fname, 11, 16)
+  df_hour$site <- as.factor(df_hour$site) #so we can group colours by site
+  df <- rbind(df, df_hour) 
+}
+
+df$site <- as.factor(df$site)
+di_NATT <- ggplot(df, aes(x=hour, y=cica, group=site, color=site)) + 
+  geom_line() + 
+  ylab(expression("Ci:Ca")) +
+  xlab(expression("Hour")) +
+  theme_classic() 
+plot(di_NATT)
+
+#ggsave("di_sth.png")
 
 
 ```
@@ -118,57 +112,42 @@ ggsave("di_sth.png")
 
 df <- NULL
 
-=======
-df <- NULL
 
->>>>>>> 57c314a99072b1ed58795228dc43b237f046f216
 files <- Sys.glob("processed/*")
 for (fname in files) {
   df_site <- read.csv(fname)
   
-<<<<<<< HEAD
-  df_grp_doy <- group_by(df_site, doy) 
-  df_doy <- summarize_all(df_grp_doy, funs(mean)) 
+  df_grp_doy <- group_by(df_site, doy)
+  
+  df_doy <- summarize_all(df_grp_doy, funs(mean))
   df_doy$site <- substr(fname, 11, 16)
   df_doy$site <- as.factor(df_doy$site) #so we can group colours by site
   df <- rbind(df, df_doy) 
 }
+
+ 
+
+
+```
 
 df$site <- as.factor(df$site)
 doy_all <- ggplot(df, aes(x=doy, y=cica, group=site, color=site)) + 
   geom_line() + 
   ylab(expression("Ci:Ca")) +
   xlab(expression("Day of Year")) +
-  theme_classic() 
-
-ggsave("doy_all.png")
-
-=======
-  df_grp_month <- group_by(df_site, month) 
-  df_month <- summarise_all(df_grp_month, funs(mean)) 
-  df_month$site <- substr(fname, 11, 16)
-  df_month$site <- as.factor(df_month$site) #so we can group colours by site
-  df <- rbind(df, df_month) 
-}
-
-df$site <- as.factor(df$site)
-ggplot(df, aes(x=month, y=cica, group=site, color=site)) + 
-  geom_line() + 
-  theme_classic() 
-
->>>>>>> 57c314a99072b1ed58795228dc43b237f046f216
-```
+  theme_classic()
 
 ```{r}
 
-# just plot the NATT
+# month NATT
 df <- NULL
 
-files <- c("processed/AU-Ade_all_cica_env_data.csv", 
-           "processed/AU-DaS_all_cica_env_data.csv", 
-           "processed/AU-Dry_all_cica_env_data.csv", 
-           "processed/AU-How_all_cica_env_data.csv",
-           "processed/AU-Stp_all_cica_env_data.csv") 
+files <- c("processed/AU-Gin_all_cica_env_data.csv",
+           "processed/AU-GWW_all_cica_env_data.csv", 
+           "processed/AU-Whr_all_cica_env_data.csv", 
+           "processed/AU-Tum_all_cica_env_data.csv", 
+           "processed/AU-Cum_all_cica_env_data.csv")
+           
 for (fname in files) {
   df_site <- read.csv(fname)
   
@@ -179,44 +158,49 @@ for (fname in files) {
   df <- rbind(df, df_month) 
 }
 
+df <- transform(df, month = month.abb[month])
+  df$month <-factor(df$month, 
+                      levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")) 
 df$site <- as.factor(df$site)
 ggplot(df, aes(x=month, y=cica, group=site, color=site)) + 
-  geom_line() + 
-  theme_classic() 
-
-```{r}
-#Plotting day NATT sites
-
-df <- NULL
-
-df <- NULL
-files <- c("processed/AU-Ade_all_cica_env_data.csv", 
-           "processed/AU-DaS_all_cica_env_data.csv", 
-           "processed/AU-Dry_all_cica_env_data.csv", 
-           "processed/AU-How_all_cica_env_data.csv",
-           "processed/AU-Stp_all_cica_env_data.csv") 
-
-for (fname in files) {
-  df_site <- read.csv(fname)
-  
-  df_grp_doy <- group_by(df_site, doy) 
-  df_doy <- summarize_all(df_grp_doy, funs(mean)) 
-  df_doy$site <- substr(fname, 11, 16)
-  df_doy$site <- as.factor(df_doy$site) #so we can group colours by site
-  df <- rbind(df, df_doy) 
-}
-
-df$site <- as.factor(df$site)
-doy_NATT <- ggplot(df, aes(x=doy, y=cica, group=site, color=site)) + 
   geom_line() + 
   ylab(expression("Ci:Ca")) +
-  xlab(expression("Day of Year")) +
+  xlab(expression("Month")) +
   theme_classic() 
-
-ggsave("doy_NATT.png")
-
 ```
 
+```{r}
+# month Sth
+df <- NULL
+
+files <- c("processed/AU-Gin_all_cica_env_data.csv", 
+           "processed/AU-GWW_all_cica_env_data.csv", 
+           "processed/AU-Whr_all_cica_env_data.csv", 
+           "processed/AU-Tum_all_cica_env_data.csv",
+           "processed/AU-Cum_all_cica_env_data.csv")
+           
+for (fname in files) {
+  df_site <- read.csv(fname)
+  
+  df_grp_month <- group_by(df_site, month) 
+  df_month <- summarise_all(df_grp_month, funs(mean)) 
+  df_month$site <- substr(fname, 11, 16)
+  df_month$site <- as.factor(df_month$site) #so we can group colours by site
+  df <- rbind(df, df_month) 
+}
+
+df <- transform(df, month = month.abb[month])
+df$month <-factor(df$month, 
+                      levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")) 
+df$site <- as.factor(df$site)
+ggplot(df, aes(x=month, y=cica, group=site, color=site)) + 
+  geom_line() + 
+  ylab(expression("Ci:Ca")) +
+  xlab(expression("Month")) +
+  theme_classic() 
+```
 
 ```{r}
 #Plotting day Sth sites
@@ -241,6 +225,11 @@ for (fname in files) {
   df <- rbind(df, df_doy) 
 }
 
+df <- transform(df, month = month.abb[month])
+df$month <-factor(df$month, 
+                      levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")) 
+
 df$site <- as.factor(df$site)
 doy_sth <- ggplot(df, aes(x=doy, y=cica, group=site, color=site)) + 
   geom_line() + 
@@ -248,13 +237,13 @@ doy_sth <- ggplot(df, aes(x=doy, y=cica, group=site, color=site)) +
   xlab(expression("Day of Year")) +
   theme_classic() 
 
-ggsave("doy_sth.png")
+#ggsave("doy_sth.png")
 
 ```
 
 
 
-plotting months by year -> x axis
+
 ```{r}
 
 #Plotting month all sites
@@ -279,70 +268,10 @@ mon_all <- ggplot(df, aes(x=month, y=cica, group=site, color=site)) +
   xlab(expression("Month")) +
   theme_classic() 
 
-ggsave("mon_all.png")
 ```
 
 
-```{r}
-#Plot the NATT by month
-df <- NULL
 
-files <- c("processed/AU-Ade_all_cica_env_data.csv", 
-           "processed/AU-DaS_all_cica_env_data.csv", 
-           "processed/AU-Dry_all_cica_env_data.csv", 
-           "processed/AU-How_all_cica_env_data.csv",
-           "processed/AU-Stp_all_cica_env_data.csv") 
-for (fname in files) {
-  df_site <- read.csv(fname)
-  
-  df_grp_month <- group_by(df_site, month) 
-  df_month <- summarise_all(df_grp_month, funs(mean)) 
-  df_month$site <- substr(fname, 11, 16)
-  df_month$site <- as.factor(df_month$site) #so we can group colours by site
-  df <- rbind(df, df_month) 
-}
-
-df$site <- as.factor(df$site)
-mon_NATT <- ggplot(df, aes(x=month, y=cica, group=site, color=site)) + 
-  geom_line() + 
-  ylab(expression("Ci:Ca")) +
-  xlab(expression("Month")) +
-  theme_classic() 
-plot(mon_NATT)
-
-ggsave("mon_NATT.png")
-```
-
-
-```{r}
-#Plot the Sth by month
-df <- NULL
-
-files <- c("processed/AU-Gin_all_cica_env_data.csv", 
-           "processed/AU-GWW_all_cica_env_data.csv", 
-           "processed/AU-Whr_all_cica_env_data.csv", 
-           "processed/AU-Tum_all_cica_env_data.csv",
-           "processed/AU-Cum_all_cica_env_data.csv") 
- 
-for (fname in files) {
-  df_site <- read.csv(fname)
-  
-  df_grp_month <- group_by(df_site, month) 
-  df_month <- summarise_all(df_grp_month, funs(mean)) 
-  df_month$site <- substr(fname, 11, 16)
-  df_month$site <- as.factor(df_month$site) #so we can group colours by site
-  df <- rbind(df, df_month) 
-}
-
-df$site <- as.factor(df$site)
-mon_sth <- ggplot(df, aes(x=month, y=cica, group=site, color=site)) + 
-  geom_line() + 
-  ylab(expression("Ci:Ca")) +
-  xlab(expression("Month")) +
-  theme_classic() 
-plot(mon_sth)
-ggsave("mon_sth.png")
-```
 
 
 
